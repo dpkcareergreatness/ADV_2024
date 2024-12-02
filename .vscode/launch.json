@@ -9,7 +9,7 @@
 			"type": "gdb",
 			"request": "launch",
 			"target": "./a.out",
-			"cwd": "${workspaceRoot}",
+			"cwd": "${workspaceRoot}/day2",
 			"valuesFormatting": "parseText"
 		}
 	]

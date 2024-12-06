@@ -5,6 +5,22 @@ import pdb
 pageOrdering = {}
 bUpdatePageOrdering = True
 safeUpdateMidPageSum = 0
+fixedUpdateMidPageSum = 0
+
+def FixIncorrectUpdates(pu):
+    fixedList = [0 for _ in range(len(pu))]
+    #Iterate page by page
+    for page in pu:
+        newOffset = 0
+         #For each page, if it is in the dependency list of other pages, increment its index in the new list by 1
+        for p in pu:
+            depPage = pageOrdering.get(p, None)
+            if depPage != None:
+                if page in depPage:
+                    newOffset = newOffset + 1
+        fixedList[newOffset] = page
+
+    return fixedList
 
 def IsUpdateValid(pu):
     
@@ -12,20 +28,22 @@ def IsUpdateValid(pu):
     #Next, Iterate the pageOrdering for the particular page. If any of the dependent pages is marked as updated, its not a valid update
     #Maintain another dictionary to mark page as updated
     pagesWritten = {}
+    bUpdateValid = True
     for page in pu:
         dependentPages = pageOrdering.get(page, None)
         if dependentPages != None:
             for depPage in dependentPages:
                 if pagesWritten.get(depPage, -1) != -1:
-                    return False
+                    bUpdateValid = False
+                    return bUpdateValid
         #Mark the page as written
         pagesWritten[page] = 1   
     print ("Safe Update ", pu)    
-    
-    return True
+
+    return bUpdateValid
 
 def ParseInput():
-    global bUpdatePageOrdering, safeUpdateMidPageSum
+    global bUpdatePageOrdering, safeUpdateMidPageSum, fixedUpdateMidPageSum
     with open("./day5.txt") as f:
         for line in f:
             pageUpdate = []
@@ -48,9 +66,17 @@ def ParseInput():
                 for ch in temp:
                     pageUpdate.append(int(ch))
 
-                if (IsUpdateValid(pageUpdate) == True):
+                output = IsUpdateValid(pageUpdate)
+                if (output == True):
                     length = len(pageUpdate)
                     safeUpdateMidPageSum = safeUpdateMidPageSum + pageUpdate[length//2]
+                else:
+                    fixedList = FixIncorrectUpdates(pageUpdate)
+                    output = IsUpdateValid(fixedList)
+                    print("Fixed list is ", fixedList)
+                    length = len(fixedList)
+                    fixedUpdateMidPageSum = fixedUpdateMidPageSum + fixedList[length//2]
 
 ParseInput()
-print("Answer is ", safeUpdateMidPageSum)
+print("Answer part1 is ", safeUpdateMidPageSum)
+print("Answer part2 is ", fixedUpdateMidPageSum)
